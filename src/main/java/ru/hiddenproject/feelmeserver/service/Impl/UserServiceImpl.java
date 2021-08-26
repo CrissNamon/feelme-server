@@ -18,10 +18,10 @@ public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
 
-    @Value("$app.user-code-length")
+    @Value("${app.user-code-length}")
     private int userCodeLength;
 
-    @Value("$app.user-token-length")
+    @Value("${app.user-token-length}")
     private int userTokenLength;
 
     @Autowired
