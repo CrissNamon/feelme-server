@@ -1,6 +1,7 @@
 package ru.hiddenproject.feelmeserver.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Entity(name = "app_user")
 public class User {
@@ -10,18 +11,22 @@ public class User {
     private Long id;
 
     @Column(name = "login", nullable = false)
+    @NotBlank(message = "User login can't be empty")
     private String login;
 
     @Column(name = "device_uid")
+    @NotBlank(message = "User's device UID can't be empty")
     private String deviceUID;
 
     @Column(name = "firebase_token", nullable = false)
+    @NotBlank(message = "User's firebase token can't be null")
     private String firebaseToken;
 
     @Column(name = "token")
     private String token;
 
     @Column(name = "code", nullable = false)
+    @NotBlank(message = "User's code can't be null")
     private String code;
 
     public User() {}

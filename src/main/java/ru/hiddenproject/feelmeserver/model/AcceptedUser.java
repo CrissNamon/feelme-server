@@ -1,6 +1,8 @@
 package ru.hiddenproject.feelmeserver.model;
 
 import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 @Entity(name = "accepted_user")
 public class AcceptedUser {
@@ -11,10 +13,14 @@ public class AcceptedUser {
 
     @ManyToOne
     @JoinColumn(name = "original_user_id")
+    @NotNull
+    @Valid
     private User originalUser;
 
     @ManyToOne
     @JoinColumn(name = "accepted_user_id")
+    @NotNull
+    @Valid
     private User acceptedUser;
 
     public AcceptedUser() {}
