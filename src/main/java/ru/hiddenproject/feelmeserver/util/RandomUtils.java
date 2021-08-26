@@ -2,6 +2,9 @@ package ru.hiddenproject.feelmeserver.util;
 
 import java.util.Random;
 
+/**
+ * Utils for some operations with random data
+ */
 public class RandomUtils {
 
     /**

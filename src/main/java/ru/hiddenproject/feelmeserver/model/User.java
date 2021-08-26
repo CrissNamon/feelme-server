@@ -25,7 +25,6 @@ public class User {
     private String token;
 
     @Column(name = "code")
-    @NotBlank(message = "User's code can't be null")
     private String code;
 
     public User() {}

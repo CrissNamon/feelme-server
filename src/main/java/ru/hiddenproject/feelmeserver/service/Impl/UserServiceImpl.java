@@ -3,8 +3,10 @@ package ru.hiddenproject.feelmeserver.service.Impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
+import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
 import ru.hiddenproject.feelmeserver.model.User;
 import ru.hiddenproject.feelmeserver.object.ValidationResult;
@@ -57,19 +59,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String updateToken(User user) {
-        return null;
+        String userToken = RandomUtils.generateRandomString(userTokenLength);
+        user.setToken(userToken);
+        return userToken;
     }
 
     @Override
-    public User createUser(BaseUserDto baseUserDto) throws DataValidityException {
+    public User createUser(BaseUserDto baseUserDto) throws DataValidityException, InternalException {
         ValidationResult validationResult = ValidationUtils.validate(baseUserDto);
         if(!validationResult.isValid()) {
             throw new DataValidityException(
                     validationResult.getFirstErrorMessage()
             );
         }
-        User user = UserMapper.INSTANCE.baseDtoToModel(baseUserDto);
+        User user = userRepository.findByLoginAndDeviceUID(baseUserDto.getLogin(), baseUserDto.getDeviceUID())
+                .orElse(null);
+        if(user != null) {
+            throw new InternalException("User exists");
+        }
+        user = UserMapper.INSTANCE.baseDtoToModel(baseUserDto);
         user = savePlain(user);
+        if(user.getId() == null) {
+            throw new InternalException("User saving operation failed");
+        }
         String userCode = user.getId() + RandomUtils.generateRandomString(userCodeLength);
         String userToken = RandomUtils.generateRandomString(userTokenLength);
         user.setCode(userCode);
