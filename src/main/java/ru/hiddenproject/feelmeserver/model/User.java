@@ -18,14 +18,13 @@ public class User {
     @NotBlank(message = "User's device UID can't be empty")
     private String deviceUID;
 
-    @Column(name = "firebase_token", nullable = false)
-    @NotBlank(message = "User's firebase token can't be null")
+    @Column(name = "firebase_token")
     private String firebaseToken;
 
     @Column(name = "token")
     private String token;
 
-    @Column(name = "code", nullable = false)
+    @Column(name = "code")
     @NotBlank(message = "User's code can't be null")
     private String code;
 

@@ -1,5 +1,7 @@
 package ru.hiddenproject.feelmeserver.service;
 
+import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
+import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.model.User;
 
 public interface UserService {
@@ -7,9 +9,9 @@ public interface UserService {
     /**
      * Saves user data to database
      * @param user User data
-     * @return true if data has been saved successfully
+     * @return Saved user data
      */
-    boolean save(User user);
+    User save(User user) throws DataValidityException;
 
     /**
      * @param id User id to find
@@ -29,6 +31,18 @@ public interface UserService {
      */
     User findByCode(String code);
 
+    /**
+     * Updates user token
+     * @param user User to update
+     * @return New user token
+     */
     String updateToken(User user);
+
+    /**
+     * Creates db user from dto
+     * @param baseUserDto New user's data
+     * @return User to save in db
+     */
+    User createUser(BaseUserDto baseUserDto) throws DataValidityException;
 
 }
