@@ -1,0 +1,1 @@
+ALTER TABLE accepted_user ADD COLUMN invitation_status VARCHAR(16) DEFAULT 'PENDING';

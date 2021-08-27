@@ -1,0 +1,8 @@
+app:
+  user-code-length: 5
+  user-token-length: 16
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect

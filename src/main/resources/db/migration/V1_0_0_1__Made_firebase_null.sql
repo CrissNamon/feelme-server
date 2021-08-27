@@ -1,0 +1,2 @@
+ALTER TABLE app_user ALTER COLUMN firebase_token DROP NOT NULL;
+ALTER TABLE app_user ALTER COLUMN code DROP NOT NULL;
