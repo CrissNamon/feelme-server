@@ -1,6 +1,7 @@
 package ru.hiddenproject.feelmeserver.integration;
 
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
+import ru.hiddenproject.feelmeserver.exception.DataExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.model.User;
@@ -44,6 +45,7 @@ public interface UserService {
      * @param baseUserDto New user's data
      * @return User to save in db
      */
-    User createUser(BaseUserDto baseUserDto) throws DataValidityException, InternalException;
+    User createUser(BaseUserDto baseUserDto) throws DataValidityException,
+            InternalException, DataExistsException;
 
 }

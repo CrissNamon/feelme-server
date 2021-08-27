@@ -9,6 +9,7 @@ import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.dto.ErrorResponseDto;
 import ru.hiddenproject.feelmeserver.dto.RegisteredUserDto;
 import ru.hiddenproject.feelmeserver.dto.ResponseDto;
+import ru.hiddenproject.feelmeserver.exception.DataExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
@@ -21,20 +22,21 @@ import javax.validation.Valid;
 import static ru.hiddenproject.feelmeserver.Url.*;
 
 @RestController
-@RequestMapping(API_PATH)
+@RequestMapping(API_PATH + USER.ENDPOINT)
 @Validated
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @PostMapping(USER.ENDPOINT + USER.REGISTER)
+    @PostMapping(USER.REGISTER)
     public ResponseEntity<ResponseDto<RegisteredUserDto>> register(
-            @RequestBody @Valid BaseUserDto baseUserDto) throws DataValidityException, InternalException {
+            @RequestBody @Valid BaseUserDto baseUserDto)
+            throws DataValidityException, InternalException, DataExistsException {
         User user = userService.createUser(baseUserDto);
         RegisteredUserDto registeredUserDto = UserMapper.INSTANCE.modelToRegistered(user);
         return ResponseEntity.ok(
@@ -45,6 +47,14 @@ public class UserController {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponseDto<Exception>> handleConstraintViolationException(ConstraintViolationException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(
+                        new ErrorResponseDto<>(e.getMessage())
+                );
+    }
+
+    @ExceptionHandler(DataExistsException.class)
+    public ResponseEntity<ErrorResponseDto<Exception>> handleDataExistsException(DataExistsException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(
                         new ErrorResponseDto<>(e.getMessage())
                 );

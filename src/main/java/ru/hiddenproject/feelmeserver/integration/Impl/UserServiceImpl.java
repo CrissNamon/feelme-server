@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
+import ru.hiddenproject.feelmeserver.exception.DataExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.integration.UserService;
@@ -64,7 +65,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(BaseUserDto baseUserDto) throws DataValidityException, InternalException {
+    public User createUser(BaseUserDto baseUserDto) throws DataValidityException, InternalException, DataExistsException {
         ValidationResult validationResult = ValidationUtils.validate(baseUserDto);
         if(!validationResult.isValid()) {
             throw new DataValidityException(
@@ -74,7 +75,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByLoginAndDeviceUID(baseUserDto.getLogin(), baseUserDto.getDeviceUID())
                 .orElse(null);
         if(user != null) {
-            throw new InternalException("User exists");
+            throw new DataExistsException("User exists");
         }
         user = UserMapper.INSTANCE.baseDtoToModel(baseUserDto);
         user = save(user);

@@ -2,7 +2,10 @@ package ru.hiddenproject.feelmeserver.dto;
 
 public class RegisteredUserDto extends BaseUserDto{
 
+    private String login;
+
     private String token;
+
     private String code;
 
     public RegisteredUserDto() {}
