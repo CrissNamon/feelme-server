@@ -6,7 +6,7 @@ services:
   - docker
 
 script:
-  - ./mvnw package -DskipTests javadoc:javadoc -B
+  - ./mvnw package javadoc:javadoc -B
 
 notifications:
   email:
