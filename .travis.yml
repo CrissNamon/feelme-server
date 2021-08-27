@@ -26,7 +26,7 @@ deploy:
   on:
     tags: true
 
-after_deploy: |
+after_success: |
   bash <(curl -s https://codecov.io/bash)
   if [ -n "$GITHUB_API_KEY" ]; then
     cd "$TRAVIS_BUILD_DIR"
