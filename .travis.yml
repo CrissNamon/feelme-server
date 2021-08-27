@@ -1,0 +1,46 @@
+language: java
+jdk:
+  - openjdk11
+
+script:
+  - ./mvnw package -DskipTests javadoc:javadoc -B
+
+notifications:
+  email:
+    recipients:
+      - danilarassokhin@gmail.com
+    on_success: never
+    on_failure: always
+
+before_deploy:
+    - git config --local user.name "CrissNamon"
+    - git config --local user.email "danilarassokhin@gmail.com"
+    - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+    - git tag $TRAVIS_TAG
+deploy:
+  provider: releases
+  api_key: $GITHUB_API_KEY
+  file_glob: true
+  file: $TRAVIS_BUILD_DIR/target/*.jar
+  skip_cleanup: true
+  on:
+    tags: true
+
+after_success: |
+  bash <(curl -s https://codecov.io/bash)
+  if [ -n "$GITHUB_API_KEY" ]; then
+    cd "$TRAVIS_BUILD_DIR"
+    mkdir apidocs
+    mkdir apidocs/docs
+    cd apidocs
+    git init
+    git checkout -b apidocs
+    git pull https://github.com/CrissNamon/feelme-server.git apidocs
+    cp -r ../target/site/apidocs/. ./docs/
+    git add .
+    git -c user.name='travis' -c user.email='travis' commit -m 'Update docs'
+    git remote add origin https://github.com/CrissNamon/feelme-server.git
+    git remote -v
+    git push -q https://CrissNamon:$GITHUB_API_KEY@github.com/CrissNamon/feelme-server.git apidocs &>/dev/null
+    cd "$TRAVIS_BUILD_DIR"
+  fi
