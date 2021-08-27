@@ -1,17 +1,16 @@
-package ru.hiddenproject.feelmeserver.service.Impl;
+package ru.hiddenproject.feelmeserver.integration.Impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
+import ru.hiddenproject.feelmeserver.integration.UserService;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
 import ru.hiddenproject.feelmeserver.model.User;
 import ru.hiddenproject.feelmeserver.object.ValidationResult;
 import ru.hiddenproject.feelmeserver.repository.UserRepository;
-import ru.hiddenproject.feelmeserver.service.UserService;
 import ru.hiddenproject.feelmeserver.util.RandomUtils;
 import ru.hiddenproject.feelmeserver.util.ValidationUtils;
 

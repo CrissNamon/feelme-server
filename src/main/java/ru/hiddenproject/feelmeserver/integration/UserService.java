@@ -1,4 +1,4 @@
-package ru.hiddenproject.feelmeserver.service;
+package ru.hiddenproject.feelmeserver.integration;
 
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;

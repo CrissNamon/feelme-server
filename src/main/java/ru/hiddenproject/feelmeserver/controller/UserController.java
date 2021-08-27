@@ -13,7 +13,7 @@ import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
 import ru.hiddenproject.feelmeserver.model.User;
-import ru.hiddenproject.feelmeserver.service.UserService;
+import ru.hiddenproject.feelmeserver.integration.UserService;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
