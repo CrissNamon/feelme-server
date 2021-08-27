@@ -78,19 +78,17 @@ public class UserServiceImpl implements UserService {
             throw new InternalException("User exists");
         }
         user = UserMapper.INSTANCE.baseDtoToModel(baseUserDto);
-        user = savePlain(user);
-        if(user.getId() == null) {
+        user = save(user);
+        if(user == null) {
             throw new InternalException("User saving operation failed");
+        }
+        if(user.getId() == null) {
+            throw new InternalException("User id null");
         }
         String userCode = user.getId() + RandomUtils.generateRandomString(userCodeLength);
         String userToken = RandomUtils.generateRandomString(userTokenLength);
         user.setCode(userCode);
         user.setToken(userToken);
         return save(user);
-    }
-
-    private User savePlain(User user)
-    {
-        return userRepository.save(user);
     }
 }
