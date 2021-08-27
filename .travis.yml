@@ -15,16 +15,6 @@ notifications:
     on_success: never
     on_failure: always
 
-deploy:
-  provider: releases
-  api_key: $GITHUB_API_KEY
-  file_glob: true
-  file: $TRAVIS_BUILD_DIR/target/*.jar
-  skip_cleanup: true
-  on:
-    tags: true
-    all_branches: true
-
 after_success: |
   bash <(curl -s https://codecov.io/bash)
   if [ -n "$GITHUB_API_KEY" ]; then
