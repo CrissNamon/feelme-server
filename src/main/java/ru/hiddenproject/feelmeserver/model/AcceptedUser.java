@@ -1,5 +1,7 @@
 package ru.hiddenproject.feelmeserver.model;
 
+import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
+
 import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -22,6 +24,10 @@ public class AcceptedUser {
     @NotNull
     @Valid
     private User acceptedUser;
+
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "invitation_status")
+    private InvitationStatus invitationStatus;
 
     public AcceptedUser() {}
 
@@ -47,5 +53,13 @@ public class AcceptedUser {
 
     public void setAcceptedUser(User acceptedUser) {
         this.acceptedUser = acceptedUser;
+    }
+
+    public InvitationStatus getInvitationStatus() {
+        return invitationStatus;
+    }
+
+    public void setInvitationStatus(InvitationStatus invitationStatus) {
+        this.invitationStatus = invitationStatus;
     }
 }

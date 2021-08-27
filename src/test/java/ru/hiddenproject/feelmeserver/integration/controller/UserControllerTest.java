@@ -1,5 +1,7 @@
 package ru.hiddenproject.feelmeserver.integration.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -8,10 +10,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import ru.hiddenproject.feelmeserver.dto.BaseRequestDto;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
-import ru.hiddenproject.feelmeserver.integration.Impl.UserServiceImpl;
+import ru.hiddenproject.feelmeserver.dto.RegisteredUserDto;
+import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
+import ru.hiddenproject.feelmeserver.model.User;
+import ru.hiddenproject.feelmeserver.service.impl.UserServiceImpl;
 import ru.hiddenproject.feelmeserver.integration.IntegrationTest;
-import ru.hiddenproject.feelmeserver.util.StringUtils;
+
+import java.lang.reflect.Type;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -29,6 +39,10 @@ public class UserControllerTest extends IntegrationTest {
     @Autowired
     private UserServiceImpl userService;
 
+    private String code;
+
+    private String token;
+
     @Test
     public void registerValidUser() throws Exception{
 
@@ -38,9 +52,9 @@ public class UserControllerTest extends IntegrationTest {
         BaseUserDto baseUserDto = new BaseUserDto();
         baseUserDto.setLogin(login);
         baseUserDto.setDeviceUID(deviceUID);
-        String json = StringUtils.toJson(baseUserDto);
+        String json = new Gson().toJson(baseUserDto);
 
-        mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                 post(
                      API_PATH + USER.ENDPOINT + USER.REGISTER
                 )
@@ -70,7 +84,7 @@ public class UserControllerTest extends IntegrationTest {
         baseUserDto.setLogin(login);
         baseUserDto.setDeviceUID(deviceUID);
 
-        String json = StringUtils.toJson(baseUserDto);
+        String json = new Gson().toJson(baseUserDto);
 
         mockMvc.perform(
                 post(
@@ -81,6 +95,37 @@ public class UserControllerTest extends IntegrationTest {
         )
                 .andExpect(
                         status().isConflict()
+                );
+    }
+
+    @Test
+    public void inviteUser() throws Exception {
+        BaseUserDto baseUserDto = new BaseUserDto();
+        baseUserDto.setDeviceUID("TestUID1");
+        baseUserDto.setLogin("TestLogin1");
+        User user = userService.createUser(baseUserDto);
+        token = user.getToken();
+
+        baseUserDto.setDeviceUID("TestUID2");
+        baseUserDto.setLogin("TestLogin2");
+        user = userService.createUser(baseUserDto);
+        code = user.getCode();
+
+        BaseRequestDto<String> inviteRequest = new BaseRequestDto<>();
+        inviteRequest.setToken(token);
+        inviteRequest.setObject(code);
+        String json = new Gson().toJson(inviteRequest);
+
+        ResultActions resultActions = mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.INVITE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+        )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.object").value(InvitationStatus.PENDING.name())
                 );
     }
 

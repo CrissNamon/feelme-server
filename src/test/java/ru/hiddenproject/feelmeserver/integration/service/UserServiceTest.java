@@ -11,7 +11,7 @@ import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.integration.IntegrationTest;
 import ru.hiddenproject.feelmeserver.model.User;
 import ru.hiddenproject.feelmeserver.repository.UserRepository;
-import ru.hiddenproject.feelmeserver.integration.Impl.UserServiceImpl;
+import ru.hiddenproject.feelmeserver.service.impl.UserServiceImpl;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)

@@ -9,6 +9,7 @@ public interface Url {
     interface USER {
         String ENDPOINT = "/user";
         String REGISTER = "/register";
+        String INVITE = "/invite";
     }
 
 }

@@ -11,5 +11,6 @@ public interface AcceptedUserRepository extends JpaRepository<AcceptedUser, Long
 
     Optional<AcceptedUser> findByOriginalUserId(Long originalUserId);
     Optional<AcceptedUser> findByAcceptedUserId(Long acceptedUserId);
+    Optional<AcceptedUser> findByOriginalUserIdAndAcceptedUserId(Long originalUserId, Long acceptedUserId);
 
 }

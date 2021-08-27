@@ -2,8 +2,6 @@ package ru.hiddenproject.feelmeserver.dto;
 
 public class RegisteredUserDto extends BaseUserDto{
 
-    private String login;
-
     private String token;
 
     private String code;
@@ -25,4 +23,5 @@ public class RegisteredUserDto extends BaseUserDto{
     public void setCode(String code) {
         this.code = code;
     }
+
 }

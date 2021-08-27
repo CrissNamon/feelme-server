@@ -1,5 +1,6 @@
 package ru.hiddenproject.feelmeserver.unit;
 
+import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -7,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
-import ru.hiddenproject.feelmeserver.util.StringUtils;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,7 +24,7 @@ public class UserControllerTest {
     @Test
     public void registerInvalidDto() throws Exception {
         BaseUserDto baseUserDto = new BaseUserDto();
-        String json = StringUtils.toJson(baseUserDto);
+        String json = new Gson().toJson(baseUserDto);
         mockMvc.perform(
                 post(API_PATH + USER.ENDPOINT + USER.REGISTER)
                 .content(json)

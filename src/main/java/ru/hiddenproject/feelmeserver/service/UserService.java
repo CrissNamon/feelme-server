@@ -1,9 +1,10 @@
-package ru.hiddenproject.feelmeserver.integration;
+package ru.hiddenproject.feelmeserver.service;
 
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
+import ru.hiddenproject.feelmeserver.model.AcceptedUser;
 import ru.hiddenproject.feelmeserver.model.User;
 
 public interface UserService {
@@ -47,5 +48,7 @@ public interface UserService {
      */
     User createUser(BaseUserDto baseUserDto) throws DataValidityException,
             InternalException, DataExistsException;
+
+    AcceptedUser inviteUser(User originalUser, User acceptedUser) throws DataExistsException;
 
 }
