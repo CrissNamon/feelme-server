@@ -2,10 +2,13 @@ package ru.hiddenproject.feelmeserver.service;
 
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
+import ru.hiddenproject.feelmeserver.exception.DataNotExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.model.AcceptedUser;
 import ru.hiddenproject.feelmeserver.model.User;
+
+import java.util.List;
 
 public interface UserService {
 
@@ -50,5 +53,11 @@ public interface UserService {
             InternalException, DataExistsException;
 
     AcceptedUser inviteUser(User originalUser, User acceptedUser) throws DataExistsException;
+
+    void rejectInvitation(Long id) throws DataExistsException, DataNotExistsException;
+
+    AcceptedUser acceptInvitation(Long id) throws DataExistsException, DataNotExistsException;
+
+    List<AcceptedUser> getAllPendingInvitations(Long id);
 
 }

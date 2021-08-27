@@ -10,6 +10,8 @@ public interface Url {
         String ENDPOINT = "/user";
         String REGISTER = "/register";
         String INVITE = "/invite";
+        String ACCEPT = "/accept";
+        String PENDING_LIST = "/pending";
     }
 
 }
