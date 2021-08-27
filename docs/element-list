@@ -1,0 +1,12 @@
+ru.hiddenproject.feelmeserver
+ru.hiddenproject.feelmeserver.controller
+ru.hiddenproject.feelmeserver.dto
+ru.hiddenproject.feelmeserver.enums
+ru.hiddenproject.feelmeserver.exception
+ru.hiddenproject.feelmeserver.mapper
+ru.hiddenproject.feelmeserver.model
+ru.hiddenproject.feelmeserver.object
+ru.hiddenproject.feelmeserver.repository
+ru.hiddenproject.feelmeserver.service
+ru.hiddenproject.feelmeserver.service.impl
+ru.hiddenproject.feelmeserver.util
