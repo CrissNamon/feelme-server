@@ -44,6 +44,20 @@ public class UserControllerTest extends IntegrationTest {
     private String token;
 
     @Test
+    public void registerInvalidDto() throws Exception {
+        BaseUserDto baseUserDto = new BaseUserDto();
+        String json = new Gson().toJson(baseUserDto);
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.REGISTER)
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(
+                        status().isBadRequest()
+                );
+    }
+
+    @Test
     public void registerValidUser() throws Exception{
 
         String login = "TestLogin";
