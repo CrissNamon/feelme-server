@@ -3,31 +3,22 @@ package ru.hiddenproject.feelmeserver.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
-import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
-import ru.hiddenproject.feelmeserver.exception.DataNotExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
-import ru.hiddenproject.feelmeserver.model.AcceptedUser;
 import ru.hiddenproject.feelmeserver.model.User;
 import ru.hiddenproject.feelmeserver.object.ValidationResult;
-import ru.hiddenproject.feelmeserver.repository.AcceptedUserRepository;
 import ru.hiddenproject.feelmeserver.repository.UserRepository;
 import ru.hiddenproject.feelmeserver.service.UserService;
 import ru.hiddenproject.feelmeserver.util.RandomUtils;
 import ru.hiddenproject.feelmeserver.util.ValidationUtils;
 
-import java.util.List;
-
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
-    private final AcceptedUserRepository acceptedUserRepository;
 
     @Value("${app.user-code-length}")
     private int userCodeLength;
@@ -36,9 +27,8 @@ public class UserServiceImpl implements UserService {
     private int userTokenLength;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, AcceptedUserRepository acceptedUserRepository) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.acceptedUserRepository = acceptedUserRepository;
     }
 
     @Override
@@ -102,57 +92,4 @@ public class UserServiceImpl implements UserService {
         return save(user);
     }
 
-    @Override
-    public AcceptedUser inviteUser(User originalUser, User acceptedUser) throws DataExistsException{
-        AcceptedUser invitation = acceptedUserRepository.findByOriginalUserIdAndAcceptedUserId(
-                originalUser.getId(),
-                acceptedUser.getId()
-        ).orElse(null);
-        if(invitation != null) {
-            throw new DataExistsException("Invitation already exists");
-        }
-        invitation = new AcceptedUser();
-        invitation.setOriginalUser(originalUser);
-        invitation.setAcceptedUser(acceptedUser);
-        invitation.setInvitationStatus(InvitationStatus.PENDING);
-        invitation = acceptedUserRepository.save(invitation);
-        return invitation;
-    }
-
-    @Override
-    public AcceptedUser acceptInvitation(Long id) throws DataExistsException, DataNotExistsException {
-        AcceptedUser invitation = getAcceptedUser(id);
-        return setInvitationStatus(invitation, InvitationStatus.ACCEPTED);
-    }
-
-    @Override
-    public List<AcceptedUser> getAllPendingInvitations(Long id) {
-        return acceptedUserRepository.findByOriginalUserIdAndInvitationStatus(id, InvitationStatus.PENDING);
-    }
-
-    @Override
-    public void rejectInvitation(Long id) throws DataExistsException, DataNotExistsException {
-        AcceptedUser invitation = getAcceptedUser(id);
-        acceptedUserRepository.deleteById(id);
-    }
-
-    private AcceptedUser getAcceptedUser(Long id) throws DataNotExistsException, DataExistsException {
-        AcceptedUser invitation = acceptedUserRepository.findById(id).orElse(null);
-        if(invitation == null) {
-            throw new DataNotExistsException("Invitation doesn't exists");
-        }
-        if(!invitation
-                .getInvitationStatus()
-                .name().equals(InvitationStatus.PENDING.name())
-        ) {
-            throw new DataExistsException("Invitation has been already processed");
-        }
-        return invitation;
-    }
-
-    @Transactional
-    AcceptedUser setInvitationStatus(AcceptedUser invitation, InvitationStatus status) {
-        invitation.setInvitationStatus(status);
-        return invitation;
-    }
 }

@@ -5,10 +5,12 @@ import java.util.Set;
 
 /**
  * Represents result of object validation
+ * <br>
+ * See {@link ru.hiddenproject.feelmeserver.util.ValidationUtils}
  */
 public class ValidationResult {
 
-    private Set<ConstraintViolation<Object>> violations;
+    private final Set<ConstraintViolation<Object>> violations;
 
     public ValidationResult(Set<ConstraintViolation<Object>> validationResult)
     {

@@ -13,6 +13,7 @@ import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
 import ru.hiddenproject.feelmeserver.model.AcceptedUser;
 import ru.hiddenproject.feelmeserver.model.User;
+import ru.hiddenproject.feelmeserver.service.AcceptedUserService;
 import ru.hiddenproject.feelmeserver.service.UserService;
 
 import javax.validation.ConstraintViolationException;
@@ -26,6 +27,8 @@ import static ru.hiddenproject.feelmeserver.Url.USER;
 
 /**
  * Controller for user actions
+ * <br>
+ * See {@link ru.hiddenproject.feelmeserver.model.User}, {@link ru.hiddenproject.feelmeserver.model.AcceptedUser}
  */
 @RestController
 @RequestMapping(API_PATH + USER.ENDPOINT)
@@ -34,9 +37,12 @@ public class UserController {
 
     private final UserService userService;
 
+    private final AcceptedUserService acceptedUserService;
+
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AcceptedUserService acceptedUserService) {
         this.userService = userService;
+        this.acceptedUserService = acceptedUserService;
     }
 
     @PostMapping(USER.REGISTER)
@@ -69,7 +75,7 @@ public class UserController {
             );
         }
 
-        AcceptedUser invitation = userService.inviteUser(originalUser, acceptedUser);
+        AcceptedUser invitation = acceptedUserService.inviteUser(originalUser, acceptedUser);
         return ResponseEntity.ok(
                 new ResponseDto<>("", invitation.getId())
         );
@@ -79,7 +85,7 @@ public class UserController {
     public ResponseEntity<ResponseDto<String>> accept(
             @RequestBody BaseRequestDto<Long> invitationId
     ) throws DataNotExistsException, DataExistsException {
-        AcceptedUser acceptedUser = userService.acceptInvitation(invitationId.getObject());
+        AcceptedUser acceptedUser = acceptedUserService.acceptInvitation(invitationId.getObject());
         return ResponseEntity.ok(
                 new ResponseDto<>("", acceptedUser.getAcceptedUser().getLogin())
         );
@@ -95,7 +101,7 @@ public class UserController {
                     new ErrorResponseDto<>("Wrong token")
             );
         }
-        List<AcceptedUser> invitations = userService.getAllPendingInvitations(originalUser.getId());
+        List<AcceptedUser> invitations = acceptedUserService.getAllPendingInvitations(originalUser.getId());
         List<InvitationResponseDto> responseDtos = invitations.stream().map(acceptedUser -> {
             InvitationResponseDto invitationResponseDto = new InvitationResponseDto();
             invitationResponseDto.setId(acceptedUser.getId());

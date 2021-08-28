@@ -11,7 +11,7 @@ import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.integration.IntegrationTest;
 import ru.hiddenproject.feelmeserver.model.AcceptedUser;
 import ru.hiddenproject.feelmeserver.model.User;
-import ru.hiddenproject.feelmeserver.repository.UserRepository;
+import ru.hiddenproject.feelmeserver.service.impl.AcceptedUserServiceImpl;
 import ru.hiddenproject.feelmeserver.service.impl.UserServiceImpl;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class UserServiceTest extends IntegrationTest {
     private UserServiceImpl userService;
 
     @Autowired
-    private UserRepository userRepository;
+    private AcceptedUserServiceImpl acceptedUserService;
 
     private User user;
 
@@ -79,7 +79,7 @@ public class UserServiceTest extends IntegrationTest {
         Assertions.assertDoesNotThrow(() -> user = userService.createUser(baseUserDto));
 
         List<AcceptedUser> invitationsExpected = new ArrayList<>();
-        Assertions.assertEquals(invitationsExpected, userService.getAllPendingInvitations(user.getId()));
+        Assertions.assertEquals(invitationsExpected, acceptedUserService.getAllPendingInvitations(user.getId()));
     }
 
 }
