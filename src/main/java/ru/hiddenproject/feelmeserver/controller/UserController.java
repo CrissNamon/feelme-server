@@ -24,6 +24,9 @@ import java.util.stream.Collectors;
 import static ru.hiddenproject.feelmeserver.Url.API_PATH;
 import static ru.hiddenproject.feelmeserver.Url.USER;
 
+/**
+ * Controller for user actions
+ */
 @RestController
 @RequestMapping(API_PATH + USER.ENDPOINT)
 @Validated

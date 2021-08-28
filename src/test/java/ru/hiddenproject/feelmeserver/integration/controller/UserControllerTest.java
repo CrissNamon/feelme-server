@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +21,7 @@ import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.dto.RegisteredUserDto;
 import ru.hiddenproject.feelmeserver.dto.ResponseDto;
 import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
+import ru.hiddenproject.feelmeserver.model.AcceptedUser;
 import ru.hiddenproject.feelmeserver.model.User;
 import ru.hiddenproject.feelmeserver.repository.AcceptedUserRepository;
 import ru.hiddenproject.feelmeserver.repository.UserRepository;
@@ -57,8 +55,6 @@ public class UserControllerTest extends IntegrationTest {
     private String token;
 
     private String code;
-
-    private Long invitationId;
 
     @BeforeEach
     public void init() throws Exception{
@@ -105,7 +101,7 @@ public class UserControllerTest extends IntegrationTest {
         baseUserDto.setDeviceUID(deviceUID);
         String json = new Gson().toJson(baseUserDto);
 
-        ResultActions resultActions = mockMvc.perform(
+        mockMvc.perform(
                 post(
                      API_PATH + USER.ENDPOINT + USER.REGISTER
                 )
@@ -158,7 +154,7 @@ public class UserControllerTest extends IntegrationTest {
         inviteRequest.setObject(code);
         String json = new Gson().toJson(inviteRequest);
 
-        ResultActions resultActions = mockMvc.perform(
+        mockMvc.perform(
                 post(API_PATH + USER.ENDPOINT + USER.INVITE)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
@@ -173,33 +169,26 @@ public class UserControllerTest extends IntegrationTest {
 
     @Test
     @Order(5)
-    public void inviteUserAccept() throws Exception{
+    public void acceptInvitation() throws Exception{
 
-        BaseRequestDto<String> inviteRequest = new BaseRequestDto<>();
-        inviteRequest.setToken(token);
-        inviteRequest.setObject(code);
-        String json = new Gson().toJson(inviteRequest);
-        ResultActions resultActions = mockMvc.perform(
-                post(API_PATH + USER.ENDPOINT + USER.INVITE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-        )
-                .andExpect(
-                        status().isOk()
-                )
-                .andExpect(
-                        jsonPath("$.object").isNumber()
-                )
-                .andDo(mvcResult -> {
-                    InvitationDto invitationDto = new Gson()
-                            .fromJson(mvcResult.getResponse().getContentAsString(), InvitationDto.class);
-                    invitationId = invitationDto.getObject();
-                });
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        AcceptedUser invitation = new AcceptedUser();
+        invitation.setOriginalUser(originalUser);
+        invitation.setAcceptedUser(acceptedUser);
+        invitation.setInvitationStatus(InvitationStatus.PENDING);
+        invitation = acceptedUserRepository.save(invitation);
+
+        Assertions.assertNotNull(invitation);
+        Assertions.assertNotNull(invitation.getId());
 
         BaseRequestDto<Long> inviteAcceptRequest = new BaseRequestDto<>();
         inviteAcceptRequest.setToken(token);
-        inviteAcceptRequest.setObject(invitationId);
-        json = new Gson().toJson(inviteAcceptRequest);
+        inviteAcceptRequest.setObject(invitation.getId());
+        String json = new Gson().toJson(inviteAcceptRequest);
 
         mockMvc.perform(
                 post(API_PATH + USER.ENDPOINT + USER.ACCEPT)
@@ -210,33 +199,4 @@ public class UserControllerTest extends IntegrationTest {
                         status().isOk()
                 );
     }
-
-    public static class InvitationDto {
-        public Long object;
-
-        public InvitationDto() {}
-
-        public void setObject(Long object) {
-            this.object = object;
-        }
-
-        public Long getObject() {
-            return object;
-        }
-    }
-
-    public static class RegisteredDto {
-        public RegisteredUserDto object;
-
-        public RegisteredDto() {}
-
-        public void setObject(RegisteredUserDto object) {
-            this.object = object;
-        }
-
-        public RegisteredUserDto getObject() {
-            return object;
-        }
-    }
-
 }
