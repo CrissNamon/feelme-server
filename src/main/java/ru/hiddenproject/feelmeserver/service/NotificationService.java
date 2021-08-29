@@ -5,6 +5,6 @@ import ru.hiddenproject.feelmeserver.exception.NotificationException;
 
 public interface NotificationService {
 
-    void send(NotificationDto notificationDto) throws NotificationException;
+    void send(NotificationDto notificationDto, String receiver) throws NotificationException;
 
 }
