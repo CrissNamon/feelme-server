@@ -52,7 +52,7 @@ public class NotificationDto {
     }
 
     /**
-     * @return Notification data as key => value
+     * @return Notification data as key, value
      */
     public Map<String, String> getData() {
         return data;
