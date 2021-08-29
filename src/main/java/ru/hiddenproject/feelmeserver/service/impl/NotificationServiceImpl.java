@@ -8,6 +8,7 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
 import ru.hiddenproject.feelmeserver.dto.NotificationDto;
 import ru.hiddenproject.feelmeserver.dto.ResponseDto;
 import ru.hiddenproject.feelmeserver.exception.NotificationException;
@@ -15,6 +16,7 @@ import ru.hiddenproject.feelmeserver.service.NotificationService;
 
 import java.io.IOException;
 
+@Service
 public class NotificationServiceImpl implements NotificationService<String> {
 
     @Override
@@ -39,6 +41,8 @@ public class NotificationServiceImpl implements NotificationService<String> {
         } catch (IOException e) {
             throw new NotificationException("Internal error. Account resource not found");
         } catch (FirebaseMessagingException e) {
+            throw new NotificationException(e.getMessage());
+        } catch (IllegalArgumentException e) {
             throw new NotificationException(e.getMessage());
         }
     }
