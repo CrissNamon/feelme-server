@@ -24,13 +24,12 @@ public class NotificationServiceTest extends UnitTest {
         notificationDto.setSubject("Test subject");
         notificationDto.setContent("Test content");
         notificationDto.putData("testkey", "testvalue");
-        String token = "";
+        String token = "c9oQ-ks-TRm9YuNq7HZpJN:APA91bEx-egwWTyWO3mRUXCY5AF0xjB5Jk6uJtygED8Z-P23jnoQCJjaeJ_MVgMnq3ZbHJ32p2W9nKXERW-nn8wivVO-XoPKv3QTf3-5vPSP8nA5H1yVEiE__t4gna43veiaZQR2H0sY";
         /*
         Assertions.assertDoesNotThrow(() -> responseDto = notificationService.send(notificationDto, token));
         Assertions.assertNotNull(responseDto);
         Assertions.assertNotNull(responseDto.getObject());
         Assertions.assertEquals("OK", responseDto.getMessage());
-
          */
     }
 

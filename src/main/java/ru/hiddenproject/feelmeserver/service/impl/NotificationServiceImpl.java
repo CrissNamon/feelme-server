@@ -22,19 +22,7 @@ public class NotificationServiceImpl implements NotificationService<String> {
     @Override
     public ResponseDto<String> send(NotificationDto notificationDto, String token) throws NotificationException {
         try {
-            Notification notification = Notification
-                    .builder()
-                    .setTitle(notificationDto.getSubject())
-                    .setBody(notificationDto.getContent())
-                    .build();
-
-            Message message = Message
-                    .builder()
-                    .setToken(token)
-                    .setNotification(notification)
-                    .putAllData(notificationDto.getData())
-                    .build();
-
+            Message message = createFirebaseMessage(notificationDto, token);
             return new ResponseDto<>("OK",
                     firebaseMessaging().send(message)
             );
@@ -45,6 +33,26 @@ public class NotificationServiceImpl implements NotificationService<String> {
         } catch (IllegalArgumentException e) {
             throw new NotificationException(e.getMessage());
         }
+    }
+
+    private Message createFirebaseMessage(NotificationDto notificationDto, String token) {
+
+        return Message
+                .builder()
+                .setToken(token)
+                .setNotification(
+                        createFirebaseNotification(notificationDto)
+                )
+                .putAllData(notificationDto.getData())
+                .build();
+    }
+
+    private Notification createFirebaseNotification(NotificationDto notificationDto) {
+        return Notification
+                .builder()
+                .setTitle(notificationDto.getSubject())
+                .setBody(notificationDto.getContent())
+                .build();
     }
 
     private FirebaseMessaging firebaseMessaging() throws IOException {
