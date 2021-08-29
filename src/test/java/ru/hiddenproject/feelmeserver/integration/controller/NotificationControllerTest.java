@@ -68,7 +68,7 @@ public class NotificationControllerTest extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(
-                        status().isBadRequest()
+                        status().isNotFound()
                 );
     }
 
@@ -85,7 +85,7 @@ public class NotificationControllerTest extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(
-                        status().isBadRequest()
+                        status().isNotFound()
                 );
     }
 }

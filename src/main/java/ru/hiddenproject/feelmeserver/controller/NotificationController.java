@@ -60,4 +60,12 @@ public class NotificationController {
                 );
     }
 
+    @ExceptionHandler(DataNotExistsException.class)
+    public ResponseEntity<ErrorResponseDto<Exception>> handleDataNotExistsException(DataNotExistsException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                        new ErrorResponseDto<>(e.getMessage())
+                );
+    }
+
 }
