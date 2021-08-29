@@ -3,15 +3,15 @@ package ru.hiddenproject.feelmeserver.service;
 import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataNotExistsException;
-import ru.hiddenproject.feelmeserver.model.AcceptedUser;
+import ru.hiddenproject.feelmeserver.model.Invitation;
 import ru.hiddenproject.feelmeserver.model.User;
 
 import java.util.List;
 
 /**
- * Interface for operations with {@link ru.hiddenproject.feelmeserver.model.AcceptedUser}
+ * Interface for operations with {@link Invitation}
  */
-public interface AcceptedUserService {
+public interface InvitationService {
 
     /**
      * Creates invitation from {@code originalUser} to {@code acceptedUser}
@@ -20,7 +20,7 @@ public interface AcceptedUserService {
      * @return Invitation data
      * @throws DataExistsException if invitation for {@code acceptedUser} already exists
      */
-    AcceptedUser inviteUser(User originalUser, User acceptedUser) throws DataExistsException;
+    Invitation inviteUser(User originalUser, User acceptedUser) throws DataExistsException;
 
     /**
      * Accepts invitation with {@code id}
@@ -29,14 +29,22 @@ public interface AcceptedUserService {
      * @throws DataExistsException If invitation is not in {@link ru.hiddenproject.feelmeserver.enums.InvitationStatus#PENDING} status
      * @throws DataNotExistsException If invitation with given {@code id} doesn't exists
      */
-    AcceptedUser acceptInvitation(Long id) throws DataExistsException, DataNotExistsException;
+    Invitation acceptInvitation(Long id) throws DataExistsException, DataNotExistsException;
+
+    /**
+     * Accepts invitation with {@code id}
+     * @param id Invitation id to accept
+     * @throws DataExistsException If invitation is not in {@link ru.hiddenproject.feelmeserver.enums.InvitationStatus#PENDING} status
+     * @throws DataNotExistsException If invitation with given {@code id} doesn't exists
+     */
+    void rejectInvitation(Long id) throws DataExistsException, DataNotExistsException;
 
     /**
      * Returns all invitations with {@link ru.hiddenproject.feelmeserver.enums.InvitationStatus#PENDING} status for user with {@code id}
      * @param id User id
      * @return List of invitations
      */
-    List<AcceptedUser> getAllPendingInvitations(Long id);
+    List<Invitation> getAllPendingInvitations(Long id);
 
     /**
      * Changes {@code invitation} status to {@code status}
@@ -45,7 +53,7 @@ public interface AcceptedUserService {
      * @return Updated invitation data
      * @throws DataNotExistsException If {@code invitation} doesn't exists
      */
-    AcceptedUser setInvitationStatus(AcceptedUser invitation, InvitationStatus status) throws DataNotExistsException;
+    Invitation setInvitationStatus(Invitation invitation, InvitationStatus status) throws DataNotExistsException;
 
     /**
      * Searches for invitation with {@link ru.hiddenproject.feelmeserver.enums.InvitationStatus#PENDING} status
@@ -54,6 +62,6 @@ public interface AcceptedUserService {
      * @throws DataNotExistsException If invitation with given {@code id} doesn't exists
      * @throws DataExistsException If invitation with given {@code id} is not in {@link ru.hiddenproject.feelmeserver.enums.InvitationStatus#PENDING} status
      */
-    AcceptedUser getAcceptedUser(Long id) throws DataNotExistsException, DataExistsException;
+    Invitation getInvitation(Long id) throws DataNotExistsException, DataExistsException;
 
 }

@@ -9,9 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.integration.IntegrationTest;
-import ru.hiddenproject.feelmeserver.model.AcceptedUser;
+import ru.hiddenproject.feelmeserver.model.Invitation;
 import ru.hiddenproject.feelmeserver.model.User;
-import ru.hiddenproject.feelmeserver.service.impl.AcceptedUserServiceImpl;
+import ru.hiddenproject.feelmeserver.service.impl.InvitationServiceImpl;
 import ru.hiddenproject.feelmeserver.service.impl.UserServiceImpl;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class UserServiceTest extends IntegrationTest {
     private UserServiceImpl userService;
 
     @Autowired
-    private AcceptedUserServiceImpl acceptedUserService;
+    private InvitationServiceImpl acceptedUserService;
 
     private User user;
 
@@ -78,7 +78,7 @@ public class UserServiceTest extends IntegrationTest {
         baseUserDto.setLogin("LOGIN");
         Assertions.assertDoesNotThrow(() -> user = userService.createUser(baseUserDto));
 
-        List<AcceptedUser> invitationsExpected = new ArrayList<>();
+        List<Invitation> invitationsExpected = new ArrayList<>();
         Assertions.assertEquals(invitationsExpected, acceptedUserService.getAllPendingInvitations(user.getId()));
     }
 

@@ -11,9 +11,9 @@ import ru.hiddenproject.feelmeserver.exception.DataNotExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
-import ru.hiddenproject.feelmeserver.model.AcceptedUser;
+import ru.hiddenproject.feelmeserver.model.Invitation;
 import ru.hiddenproject.feelmeserver.model.User;
-import ru.hiddenproject.feelmeserver.service.AcceptedUserService;
+import ru.hiddenproject.feelmeserver.service.InvitationService;
 import ru.hiddenproject.feelmeserver.service.UserService;
 
 import javax.validation.ConstraintViolationException;
@@ -28,7 +28,7 @@ import static ru.hiddenproject.feelmeserver.Url.USER;
 /**
  * Controller for user actions
  * <br>
- * See {@link ru.hiddenproject.feelmeserver.model.User}, {@link ru.hiddenproject.feelmeserver.model.AcceptedUser}
+ * See {@link ru.hiddenproject.feelmeserver.model.User}, {@link Invitation}
  */
 @RestController
 @RequestMapping(API_PATH + USER.ENDPOINT)
@@ -37,12 +37,12 @@ public class UserController {
 
     private final UserService userService;
 
-    private final AcceptedUserService acceptedUserService;
+    private final InvitationService invitationService;
 
     @Autowired
-    public UserController(UserService userService, AcceptedUserService acceptedUserService) {
+    public UserController(UserService userService, InvitationService invitationService) {
         this.userService = userService;
-        this.acceptedUserService = acceptedUserService;
+        this.invitationService = invitationService;
     }
 
     @PostMapping(USER.REGISTER)
@@ -75,7 +75,7 @@ public class UserController {
             );
         }
 
-        AcceptedUser invitation = acceptedUserService.inviteUser(originalUser, acceptedUser);
+        Invitation invitation = invitationService.inviteUser(originalUser, acceptedUser);
         return ResponseEntity.ok(
                 new ResponseDto<>("", invitation.getId())
         );
@@ -85,9 +85,19 @@ public class UserController {
     public ResponseEntity<ResponseDto<String>> accept(
             @RequestBody BaseRequestDto<Long> invitationId
     ) throws DataNotExistsException, DataExistsException {
-        AcceptedUser acceptedUser = acceptedUserService.acceptInvitation(invitationId.getObject());
+        Invitation invitation = invitationService.acceptInvitation(invitationId.getObject());
         return ResponseEntity.ok(
-                new ResponseDto<>("", acceptedUser.getAcceptedUser().getLogin())
+                new ResponseDto<>("", invitation.getInvitationStatus().name())
+        );
+    }
+
+    @PostMapping(USER.REJECT)
+    public ResponseEntity<ResponseDto<Boolean>> reject(
+            @RequestBody BaseRequestDto<Long> invitationId
+    ) throws DataNotExistsException, DataExistsException {
+        invitationService.rejectInvitation(invitationId.getObject());
+        return ResponseEntity.ok(
+                new ResponseDto<>("", true)
         );
     }
 
@@ -101,7 +111,7 @@ public class UserController {
                     new ErrorResponseDto<>("Wrong token")
             );
         }
-        List<AcceptedUser> invitations = acceptedUserService.getAllPendingInvitations(originalUser.getId());
+        List<Invitation> invitations = invitationService.getAllPendingInvitations(originalUser.getId());
         List<InvitationResponseDto> responseDtos = invitations.stream().map(acceptedUser -> {
             InvitationResponseDto invitationResponseDto = new InvitationResponseDto();
             invitationResponseDto.setId(acceptedUser.getId());

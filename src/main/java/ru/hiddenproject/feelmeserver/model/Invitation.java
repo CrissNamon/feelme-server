@@ -1,5 +1,6 @@
 package ru.hiddenproject.feelmeserver.model;
 
+import org.springframework.transaction.annotation.Transactional;
 import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
 
 import javax.persistence.*;
@@ -10,7 +11,7 @@ import javax.validation.constraints.NotNull;
  * Invitation model
  */
 @Entity(name = "accepted_user")
-public class AcceptedUser {
+public class Invitation {
 
     /**
      * Invitation id
@@ -50,7 +51,7 @@ public class AcceptedUser {
     @Column(name = "invitation_status")
     private InvitationStatus invitationStatus;
 
-    public AcceptedUser() {}
+    public Invitation() {}
 
     public Long getId() {
         return id;

@@ -1,9 +1,6 @@
 package ru.hiddenproject.feelmeserver.integration.controller;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -11,24 +8,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import ru.hiddenproject.feelmeserver.dto.BaseRequestDto;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
-import ru.hiddenproject.feelmeserver.dto.RegisteredUserDto;
-import ru.hiddenproject.feelmeserver.dto.ResponseDto;
 import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
-import ru.hiddenproject.feelmeserver.model.AcceptedUser;
+import ru.hiddenproject.feelmeserver.exception.DataExistsException;
+import ru.hiddenproject.feelmeserver.model.Invitation;
 import ru.hiddenproject.feelmeserver.model.User;
-import ru.hiddenproject.feelmeserver.repository.AcceptedUserRepository;
+import ru.hiddenproject.feelmeserver.repository.InvitationRepository;
 import ru.hiddenproject.feelmeserver.repository.UserRepository;
+import ru.hiddenproject.feelmeserver.service.impl.InvitationServiceImpl;
 import ru.hiddenproject.feelmeserver.service.impl.UserServiceImpl;
 import ru.hiddenproject.feelmeserver.integration.IntegrationTest;
-
-import java.lang.reflect.Type;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,7 +42,10 @@ public class UserControllerTest extends IntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
-    private AcceptedUserRepository acceptedUserRepository;
+    private InvitationRepository invitationRepository;
+
+    @Autowired
+    private InvitationServiceImpl invitationService;
 
     private String token;
 
@@ -59,7 +54,7 @@ public class UserControllerTest extends IntegrationTest {
     @BeforeEach
     public void init() throws Exception{
         userRepository.deleteAll();
-        acceptedUserRepository.deleteAll();
+        invitationRepository.deleteAll();
 
         BaseUserDto baseUserDto = new BaseUserDto();
         baseUserDto.setDeviceUID("TestUID");
@@ -154,7 +149,7 @@ public class UserControllerTest extends IntegrationTest {
         inviteRequest.setObject(code);
         String json = new Gson().toJson(inviteRequest);
 
-        mockMvc.perform(
+       mockMvc.perform(
                 post(API_PATH + USER.ENDPOINT + USER.INVITE)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
@@ -176,11 +171,11 @@ public class UserControllerTest extends IntegrationTest {
         Assertions.assertNotNull(originalUser);
         Assertions.assertNotNull(acceptedUser);
 
-        AcceptedUser invitation = new AcceptedUser();
+        Invitation invitation = new Invitation();
         invitation.setOriginalUser(originalUser);
         invitation.setAcceptedUser(acceptedUser);
         invitation.setInvitationStatus(InvitationStatus.PENDING);
-        invitation = acceptedUserRepository.save(invitation);
+        invitation = invitationRepository.save(invitation);
 
         Assertions.assertNotNull(invitation);
         Assertions.assertNotNull(invitation.getId());
@@ -198,5 +193,114 @@ public class UserControllerTest extends IntegrationTest {
                 .andExpect(
                         status().isOk()
                 );
+    }
+
+    @Test
+    public void rejectInvitation() throws Exception {
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        Invitation invitation = new Invitation();
+        invitation.setOriginalUser(originalUser);
+        invitation.setAcceptedUser(acceptedUser);
+        invitation.setInvitationStatus(InvitationStatus.PENDING);
+        invitation = invitationRepository.save(invitation);
+
+        Assertions.assertNotNull(invitation);
+        Assertions.assertNotNull(invitation.getId());
+
+        BaseRequestDto<Long> inviteAcceptRequest = new BaseRequestDto<>();
+        inviteAcceptRequest.setToken(token);
+        inviteAcceptRequest.setObject(invitation.getId());
+        String json = new Gson().toJson(inviteAcceptRequest);
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.REJECT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.object").isBoolean()
+                )
+                .andExpect(
+                        jsonPath("$.object").value(true)
+                );
+    }
+
+    @Test
+    public void inviteInvitedUser() throws Exception {
+        inviteUser();
+
+        BaseRequestDto<String> inviteRequest = new BaseRequestDto<>();
+        inviteRequest.setToken(token);
+        inviteRequest.setObject(code);
+        String json = new Gson().toJson(inviteRequest);
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.INVITE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isConflict()
+                );
+
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        Assertions.assertThrows(DataExistsException.class,
+                () -> invitationService.inviteUser(originalUser, acceptedUser)
+        );
+    }
+
+    @Test
+    public void rejectAcceptedInvitation() throws Exception{
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        Invitation invitation = new Invitation();
+        invitation.setOriginalUser(originalUser);
+        invitation.setAcceptedUser(acceptedUser);
+        invitation.setInvitationStatus(InvitationStatus.PENDING);
+        invitation = invitationRepository.save(invitation);
+
+        Assertions.assertNotNull(invitation);
+        Assertions.assertNotNull(invitation.getId());
+
+        BaseRequestDto<Long> inviteAcceptRequest = new BaseRequestDto<>();
+        inviteAcceptRequest.setToken(token);
+        inviteAcceptRequest.setObject(invitation.getId());
+        String json = new Gson().toJson(inviteAcceptRequest);
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.ACCEPT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.object").isString()
+                );
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.REJECT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isConflict()
+                );
+
     }
 }

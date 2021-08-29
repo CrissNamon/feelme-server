@@ -43,7 +43,12 @@ public interface Url {
          * Invitation acceptance endpoint
          */
         String ACCEPT = "/accept";
-        
+
+        /**
+         * Invitation reject endpoint
+         */
+        String REJECT = "/reject";
+
         /**
          * All pending invitations endpoint
          */
