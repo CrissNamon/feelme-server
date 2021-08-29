@@ -1,7 +1,10 @@
 package ru.hiddenproject.feelmeserver.integration.controller;
 
 import com.google.gson.Gson;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,23 +12,23 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import ru.hiddenproject.feelmeserver.dto.BaseRequestDto;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
+import ru.hiddenproject.feelmeserver.integration.IntegrationTest;
 import ru.hiddenproject.feelmeserver.model.Invitation;
 import ru.hiddenproject.feelmeserver.model.User;
 import ru.hiddenproject.feelmeserver.repository.InvitationRepository;
 import ru.hiddenproject.feelmeserver.repository.UserRepository;
 import ru.hiddenproject.feelmeserver.service.impl.InvitationServiceImpl;
 import ru.hiddenproject.feelmeserver.service.impl.UserServiceImpl;
-import ru.hiddenproject.feelmeserver.integration.IntegrationTest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.hiddenproject.feelmeserver.Url.*;
+import static ru.hiddenproject.feelmeserver.Url.API_PATH;
+import static ru.hiddenproject.feelmeserver.Url.USER;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)

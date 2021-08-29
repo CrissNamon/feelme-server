@@ -2,6 +2,7 @@ package ru.hiddenproject.feelmeserver.service;
 
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
+import ru.hiddenproject.feelmeserver.exception.DataNotExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.model.User;
@@ -23,22 +24,25 @@ public interface UserService {
      * Searches user by id
      * @param id User id to find
      * @return User data or null
+     * @throws DataNotExistsException if user doesn't exists
      */
-    User findById(Long id);
+    User findById(Long id) throws DataNotExistsException;
 
     /**
      * Searches user by token
      * @param token User token to find
      * @return User data or null
+     * @throws DataNotExistsException if user doesn't exists
      */
-    User findByToken(String token);
+    User findByToken(String token) throws DataNotExistsException;
 
     /**
      * Searches user by invite code
      * @param code User code to find
      * @return User data or null
+     * @throws DataNotExistsException if user doesn't exists
      */
-    User findByCode(String code);
+    User findByCode(String code) throws DataNotExistsException;
 
     /**
      * Updates user token

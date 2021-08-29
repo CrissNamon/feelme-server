@@ -59,21 +59,10 @@ public class UserController {
     @PostMapping(USER.INVITE)
     public ResponseEntity<ResponseDto<Long>> invite(
             @RequestBody @Valid BaseRequestDto<String> inviteRequest
-            ) throws DataExistsException, ConstraintViolationException{
+            ) throws DataExistsException, ConstraintViolationException, DataNotExistsException{
 
         User originalUser = userService.findByToken(inviteRequest.getToken());
-        if(originalUser == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ErrorResponseDto<>("Wrong token")
-            );
-        }
-
         User acceptedUser = userService.findByCode(inviteRequest.getObject());
-        if(acceptedUser == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    new ErrorResponseDto<>("User not found")
-            );
-        }
 
         Invitation invitation = invitationService.inviteUser(originalUser, acceptedUser);
         return ResponseEntity.ok(
@@ -104,13 +93,9 @@ public class UserController {
     @GetMapping(USER.PENDING_LIST)
     public ResponseEntity<ResponseDto<List<InvitationResponseDto>>> getPendingInvitations(
             @RequestBody @Valid BaseRequestDto<String> request
-    ) {
+    ) throws DataNotExistsException{
         User originalUser = userService.findByToken(request.getToken());
-        if(originalUser == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ErrorResponseDto<>("Wrong token")
-            );
-        }
+
         List<Invitation> invitations = invitationService.getAllPendingInvitations(originalUser.getId());
         List<InvitationResponseDto> responseDtos = invitations.stream().map(acceptedUser -> {
             InvitationResponseDto invitationResponseDto = new InvitationResponseDto();

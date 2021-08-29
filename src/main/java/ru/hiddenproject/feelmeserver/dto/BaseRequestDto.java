@@ -3,6 +3,7 @@ package ru.hiddenproject.feelmeserver.dto;
 import com.google.gson.reflect.TypeToken;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Type;
 
 public class BaseRequestDto<V> {
@@ -10,6 +11,7 @@ public class BaseRequestDto<V> {
     @NotBlank(message = "User token required")
     private String token;
 
+    @NotNull
     private V object;
 
     public BaseRequestDto() {}

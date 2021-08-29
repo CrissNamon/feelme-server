@@ -55,4 +55,19 @@ public interface Url {
         String PENDING_LIST = "/pending";
     }
 
+    /**
+     * Mapping urls for
+     */
+    interface NOTIFICATION {
+        /**
+         * Main endpoint
+         */
+        String ENDPOINT = "/notification";
+
+        /**
+         * Notification sending endpoint
+         */
+        String SEND = "/send";
+    }
+
 }
