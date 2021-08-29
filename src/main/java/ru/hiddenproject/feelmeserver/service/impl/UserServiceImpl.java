@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
+import ru.hiddenproject.feelmeserver.exception.DataNotExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
@@ -43,18 +44,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findById(Long id) {
-        return userRepository.findById(id).orElse(null);
+    public User findById(Long id) throws DataNotExistsException {
+        return userRepository.findById(id).orElseThrow(() -> new DataNotExistsException("User doesn't exists"));
     }
 
     @Override
-    public User findByToken(String token) {
-        return userRepository.findByToken(token).orElse(null);
+    public User findByToken(String token) throws DataNotExistsException {
+        return userRepository.findByToken(token).orElseThrow(() -> new DataNotExistsException("User unauthorized"));
     }
 
     @Override
-    public User findByCode(String code) {
-        return userRepository.findByCode(code).orElse(null);
+    public User findByCode(String code) throws DataNotExistsException {
+        return userRepository.findByCode(code).orElseThrow(() -> new DataNotExistsException("User doesn't exists"));
     }
 
     @Override

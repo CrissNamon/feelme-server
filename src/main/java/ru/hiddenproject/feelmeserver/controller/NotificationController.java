@@ -5,19 +5,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.hiddenproject.feelmeserver.Url.*;
+import ru.hiddenproject.feelmeserver.Url.NOTIFICATION;
 import ru.hiddenproject.feelmeserver.dto.BaseRequestDto;
 import ru.hiddenproject.feelmeserver.dto.ErrorResponseDto;
 import ru.hiddenproject.feelmeserver.dto.NotificationDto;
 import ru.hiddenproject.feelmeserver.dto.ResponseDto;
-import ru.hiddenproject.feelmeserver.exception.DataValidityException;
+import ru.hiddenproject.feelmeserver.exception.DataNotExistsException;
 import ru.hiddenproject.feelmeserver.exception.NotificationException;
-import ru.hiddenproject.feelmeserver.model.Invitation;
 import ru.hiddenproject.feelmeserver.model.User;
 import ru.hiddenproject.feelmeserver.service.NotificationService;
 import ru.hiddenproject.feelmeserver.service.UserService;
-
-import javax.validation.constraints.NotBlank;
 
 import static ru.hiddenproject.feelmeserver.Url.API_PATH;
 
@@ -44,19 +41,10 @@ public class NotificationController {
     @PostMapping(NOTIFICATION.SEND)
     public ResponseEntity<ResponseDto<String>> send(
             @RequestBody BaseRequestDto<String> notificationData)
-    throws NotificationException{
+    throws NotificationException, DataNotExistsException {
         User sender = userService.findByToken(notificationData.getToken());
-        if(sender == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ErrorResponseDto<>("Wrong token")
-            );
-        }
         User receiver = userService.findByCode(notificationData.getObject());
-        if(receiver == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ErrorResponseDto<>("Receiver not found")
-            );
-        }
+
         NotificationDto notificationDto = new NotificationDto();
         notificationDto.setContent(sender.getLogin() + " sent feeling to you");
         notificationDto.setSubject("FeelMe");
