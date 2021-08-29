@@ -39,19 +39,12 @@ public class UserController {
 
     private final InvitationService invitationService;
 
-    /**
-     * Default constructor
-     */
     @Autowired
     public UserController(UserService userService, InvitationService invitationService) {
         this.userService = userService;
         this.invitationService = invitationService;
     }
 
-    /**
-     * User registration controller
-     * @param baseUserDto New user's data
-     */
     @PostMapping(USER.REGISTER)
     public ResponseEntity<ResponseDto<RegisteredUserDto>> register(
             @RequestBody @Valid BaseUserDto baseUserDto)
