@@ -44,7 +44,6 @@ public class NotificationController {
     throws NotificationException, DataNotExistsException {
         User sender = userService.findByToken(notificationData.getToken());
         User receiver = userService.findByCode(notificationData.getObject());
-
         NotificationDto notificationDto = new NotificationDto();
         notificationDto.setContent(sender.getLogin() + " sent feeling to you");
         notificationDto.setSubject("FeelMe");
@@ -54,7 +53,7 @@ public class NotificationController {
 
     @ExceptionHandler(NotificationException.class)
     public ResponseEntity<ErrorResponseDto<Exception>> handleNotificationException(NotificationException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(e.getResponseStatus())
                 .body(
                         new ErrorResponseDto<>(e.getMessage())
                 );
@@ -62,7 +61,7 @@ public class NotificationController {
 
     @ExceptionHandler(DataNotExistsException.class)
     public ResponseEntity<ErrorResponseDto<Exception>> handleDataNotExistsException(DataNotExistsException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(e.getResponseStatus())
                 .body(
                         new ErrorResponseDto<>(e.getMessage())
                 );

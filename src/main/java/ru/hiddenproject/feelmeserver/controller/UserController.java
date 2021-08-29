@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @PostMapping(USER.INVITE)
-    public ResponseEntity<ResponseDto<Long>> invite(
+    public ResponseEntity<ResponseDto<String>> invite(
             @RequestBody @Valid BaseRequestDto<String> inviteRequest
             ) throws DataExistsException, ConstraintViolationException, DataNotExistsException{
 
@@ -66,7 +66,7 @@ public class UserController {
 
         Invitation invitation = invitationService.inviteUser(originalUser, acceptedUser);
         return ResponseEntity.ok(
-                new ResponseDto<>("", invitation.getId())
+                new ResponseDto<>("", invitation.getAcceptedUser().getCode())
         );
     }
 
@@ -108,6 +108,25 @@ public class UserController {
         );
     }
 
+    @GetMapping(USER.STATUS)
+    public ResponseEntity<ResponseDto<InvitationResponseDto>> getInvitationStatus(
+            @RequestBody @Valid BaseRequestDto<Long> request) throws DataNotExistsException {
+        Invitation invitation = invitationService.getInvitation(request.getObject());
+        User originalUser = userService.findByToken(request.getToken());
+        if(originalUser.getId() != invitation.getOriginalUser().getId()
+        && originalUser.getId() != invitation.getAcceptedUser().getId()) {
+            throw new DataNotExistsException("Given invitation is not yours!", HttpStatus.FORBIDDEN);
+        }
+        InvitationResponseDto invitationResponseDto = new InvitationResponseDto();
+        invitationResponseDto.setLogin(invitation.getAcceptedUser().getLogin());
+        invitationResponseDto.setId(invitation.getId());
+        invitationResponseDto.setStatus(invitation.getInvitationStatus());
+        return ResponseEntity.ok(
+                new ResponseDto<>("", invitationResponseDto)
+        );
+    }
+
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponseDto<Exception>> handleConstraintViolationException(ConstraintViolationException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -118,7 +137,7 @@ public class UserController {
 
     @ExceptionHandler(DataExistsException.class)
     public ResponseEntity<ErrorResponseDto<Exception>> handleDataExistsException(DataExistsException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
+        return ResponseEntity.status(e.getResponseStatus())
                 .body(
                         new ErrorResponseDto<>(e.getMessage())
                 );
@@ -126,7 +145,7 @@ public class UserController {
 
     @ExceptionHandler(DataValidityException.class)
     public ResponseEntity<ErrorResponseDto<Exception>> handleDataValidityException(DataValidityException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(e.getResponseStatus())
                 .body(
                         new ErrorResponseDto<>(e.getMessage())
                 );
@@ -134,7 +153,7 @@ public class UserController {
 
     @ExceptionHandler(InternalException.class)
     public ResponseEntity<ErrorResponseDto<Exception>> handleInternalException(InternalException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(e.getResponseStatus())
                 .body(
                         new ErrorResponseDto<>(e.getMessage())
                 );
@@ -142,7 +161,7 @@ public class UserController {
 
     @ExceptionHandler(DataNotExistsException.class)
     public ResponseEntity<ErrorResponseDto<Exception>> handleDataNotExistsException(DataNotExistsException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(e.getResponseStatus())
                 .body(
                         new ErrorResponseDto<>(e.getMessage())
                 );

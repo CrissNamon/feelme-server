@@ -39,6 +39,8 @@ public interface Url {
          */
         String INVITE = "/invite";
 
+        String STATUS = "/status";
+
         /**
          * Invitation acceptance endpoint
          */

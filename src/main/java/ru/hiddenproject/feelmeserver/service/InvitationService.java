@@ -60,8 +60,7 @@ public interface InvitationService {
      * @param id Invitation id
      * @return Invitation data with given {@code id}
      * @throws DataNotExistsException If invitation with given {@code id} doesn't exists
-     * @throws DataExistsException If invitation with given {@code id} is not in {@link ru.hiddenproject.feelmeserver.enums.InvitationStatus#PENDING} status
      */
-    Invitation getInvitation(Long id) throws DataNotExistsException, DataExistsException;
+    Invitation getInvitation(Long id) throws DataNotExistsException;
 
 }

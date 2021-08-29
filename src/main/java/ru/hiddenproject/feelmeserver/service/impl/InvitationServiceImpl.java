@@ -75,11 +75,9 @@ public class InvitationServiceImpl implements InvitationService {
 
     @Override
     public Invitation getInvitation(Long id) throws DataNotExistsException {
-        Invitation invitation = invitationRepository.findById(id).orElse(null);
-        if(invitation == null) {
-            throw new DataNotExistsException("Invitation doesn't exists");
-        }
-        return invitation;
+        return invitationRepository.findById(id).orElseThrow(() ->
+                new DataNotExistsException("Invitation doesn't exists")
+        );
     }
 
     @Override

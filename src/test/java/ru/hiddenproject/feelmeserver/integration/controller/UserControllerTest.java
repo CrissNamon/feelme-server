@@ -25,6 +25,7 @@ import ru.hiddenproject.feelmeserver.service.impl.InvitationServiceImpl;
 import ru.hiddenproject.feelmeserver.service.impl.UserServiceImpl;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.hiddenproject.feelmeserver.Url.API_PATH;
@@ -161,7 +162,7 @@ public class UserControllerTest extends IntegrationTest {
                         status().isOk()
                 )
                 .andExpect(
-                        jsonPath("$.object").isNumber()
+                        jsonPath("$.object").isString()
                 );
     }
 
@@ -305,5 +306,89 @@ public class UserControllerTest extends IntegrationTest {
                         status().isConflict()
                 );
 
+    }
+
+    @Test
+    public void getInvitationStatus() throws Exception {
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        Invitation invitation = new Invitation();
+        invitation.setOriginalUser(originalUser);
+        invitation.setAcceptedUser(acceptedUser);
+        invitation.setInvitationStatus(InvitationStatus.PENDING);
+        invitation = invitationRepository.save(invitation);
+
+        Assertions.assertNotNull(invitation);
+        Assertions.assertNotNull(invitation.getId());
+
+        BaseRequestDto<Long> inviteAcceptRequest = new BaseRequestDto<>();
+        inviteAcceptRequest.setToken(token);
+        inviteAcceptRequest.setObject(invitation.getId());
+        String json = new Gson().toJson(inviteAcceptRequest);
+
+        mockMvc.perform(
+                get(API_PATH + USER.ENDPOINT + USER.STATUS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.object.id").isNumber()
+                )
+                .andExpect(
+                        jsonPath("$.object.login").isString()
+                )
+                .andExpect(
+                        jsonPath("$.object.login").value(acceptedUser.getLogin())
+                )
+                .andExpect(
+                        jsonPath("$.object.status").isString()
+                )
+                .andExpect(
+                        jsonPath("$.object.status").value("PENDING")
+                );
+    }
+
+    @Test
+    public void getInvitationStatusWrongUser() throws Exception {
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        BaseUserDto baseUserDto = new BaseUserDto();
+        baseUserDto.setLogin("Test3");
+        baseUserDto.setDeviceUID("TestUID3");
+        User wrongUser = userService.createUser(baseUserDto);
+        Assertions.assertNotNull(wrongUser);
+        Assertions.assertNotNull(wrongUser.getId());
+
+        Invitation invitation = new Invitation();
+        invitation.setOriginalUser(originalUser);
+        invitation.setAcceptedUser(acceptedUser);
+        invitation.setInvitationStatus(InvitationStatus.PENDING);
+        invitation = invitationRepository.save(invitation);
+
+        Assertions.assertNotNull(invitation);
+        Assertions.assertNotNull(invitation.getId());
+
+        BaseRequestDto<Long> inviteAcceptRequest = new BaseRequestDto<>();
+        inviteAcceptRequest.setToken(wrongUser.getToken());
+        inviteAcceptRequest.setObject(invitation.getId());
+        String json = new Gson().toJson(inviteAcceptRequest);
+
+        mockMvc.perform(
+                get(API_PATH + USER.ENDPOINT + USER.STATUS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isForbidden()
+                );
     }
 }
