@@ -4,15 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
-import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
 import ru.hiddenproject.feelmeserver.mapper.UserMapper;
-import ru.hiddenproject.feelmeserver.model.AcceptedUser;
 import ru.hiddenproject.feelmeserver.model.User;
 import ru.hiddenproject.feelmeserver.object.ValidationResult;
-import ru.hiddenproject.feelmeserver.repository.AcceptedUserRepository;
 import ru.hiddenproject.feelmeserver.repository.UserRepository;
 import ru.hiddenproject.feelmeserver.service.UserService;
 import ru.hiddenproject.feelmeserver.util.RandomUtils;
@@ -21,9 +18,7 @@ import ru.hiddenproject.feelmeserver.util.ValidationUtils;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-
-    private AcceptedUserRepository acceptedUserRepository;
+    private final UserRepository userRepository;
 
     @Value("${app.user-code-length}")
     private int userCodeLength;
@@ -32,9 +27,8 @@ public class UserServiceImpl implements UserService {
     private int userTokenLength;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, AcceptedUserRepository acceptedUserRepository) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.acceptedUserRepository = acceptedUserRepository;
     }
 
     @Override
@@ -50,7 +44,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(Long id) {
-        return null;
+        return userRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -98,20 +92,4 @@ public class UserServiceImpl implements UserService {
         return save(user);
     }
 
-    @Override
-    public AcceptedUser inviteUser(User originalUser, User acceptedUser) throws DataExistsException{
-        AcceptedUser invitation = acceptedUserRepository.findByOriginalUserIdAndAcceptedUserId(
-                originalUser.getId(),
-                acceptedUser.getId()
-        ).orElse(null);
-        if(invitation != null) {
-            throw new DataExistsException("Invitation already exists");
-        }
-        invitation = new AcceptedUser();
-        invitation.setOriginalUser(originalUser);
-        invitation.setAcceptedUser(acceptedUser);
-        invitation.setInvitationStatus(InvitationStatus.PENDING);
-        invitation = acceptedUserRepository.save(invitation);
-        return invitation;
-    }
 }

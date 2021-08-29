@@ -3,27 +3,48 @@ package ru.hiddenproject.feelmeserver.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
+/**
+ * User model
+ */
 @Entity(name = "app_user")
 public class User {
 
+    /**
+     * User id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    /**
+     * User login
+     */
     @Column(name = "login", nullable = false)
     @NotBlank(message = "User login can't be empty")
     private String login;
 
+    /**
+     * Unique device ID
+     */
     @Column(name = "device_uid")
     @NotBlank(message = "User's device UID can't be empty")
     private String deviceUID;
 
+    /**
+     * Device token for Firebase Cloud Messaging
+     */
     @Column(name = "firebase_token")
     private String firebaseToken;
 
+    /**
+     * Auth token
+     */
     @Column(name = "token")
     private String token;
 
+    /**
+     * Invite code
+     */
     @Column(name = "code")
     private String code;
 

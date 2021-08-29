@@ -21,6 +21,7 @@ public class ValidationUtils {
     }
 
     /**
+     * Returns util instance
      * @return Validation util instance
      */
     public static ValidationUtils getInstance()

@@ -1,8 +1,7 @@
 package ru.hiddenproject.feelmeserver.integration.controller;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,18 +9,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import ru.hiddenproject.feelmeserver.dto.BaseRequestDto;
 import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
-import ru.hiddenproject.feelmeserver.dto.RegisteredUserDto;
 import ru.hiddenproject.feelmeserver.enums.InvitationStatus;
+import ru.hiddenproject.feelmeserver.exception.DataExistsException;
+import ru.hiddenproject.feelmeserver.model.Invitation;
 import ru.hiddenproject.feelmeserver.model.User;
+import ru.hiddenproject.feelmeserver.repository.InvitationRepository;
+import ru.hiddenproject.feelmeserver.repository.UserRepository;
+import ru.hiddenproject.feelmeserver.service.impl.InvitationServiceImpl;
 import ru.hiddenproject.feelmeserver.service.impl.UserServiceImpl;
 import ru.hiddenproject.feelmeserver.integration.IntegrationTest;
-
-import java.lang.reflect.Type;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,11 +38,39 @@ public class UserControllerTest extends IntegrationTest {
     @Autowired
     private UserServiceImpl userService;
 
-    private String code;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private InvitationRepository invitationRepository;
+
+    @Autowired
+    private InvitationServiceImpl invitationService;
 
     private String token;
 
+    private String code;
+
+    @BeforeEach
+    public void init() throws Exception{
+        userRepository.deleteAll();
+        invitationRepository.deleteAll();
+
+        BaseUserDto baseUserDto = new BaseUserDto();
+        baseUserDto.setDeviceUID("TestUID");
+        baseUserDto.setLogin("TestLogin");
+        User user = userService.createUser(baseUserDto);
+        token = user.getToken();
+
+        baseUserDto = new BaseUserDto();
+        baseUserDto.setDeviceUID("TestUID2");
+        baseUserDto.setLogin("TestLogin2");
+        user = userService.createUser(baseUserDto);
+        code = user.getCode();
+    }
+
     @Test
+    @Order(1)
     public void registerInvalidDto() throws Exception {
         BaseUserDto baseUserDto = new BaseUserDto();
         String json = new Gson().toJson(baseUserDto);
@@ -58,17 +85,18 @@ public class UserControllerTest extends IntegrationTest {
     }
 
     @Test
+    @Order(2)
     public void registerValidUser() throws Exception{
 
-        String login = "TestLogin";
-        String deviceUID = "TestUID";
+        String login = "TestLogin1";
+        String deviceUID = "TestUID1";
 
         BaseUserDto baseUserDto = new BaseUserDto();
         baseUserDto.setLogin(login);
         baseUserDto.setDeviceUID(deviceUID);
         String json = new Gson().toJson(baseUserDto);
 
-        ResultActions resultActions = mockMvc.perform(
+        mockMvc.perform(
                 post(
                      API_PATH + USER.ENDPOINT + USER.REGISTER
                 )
@@ -90,6 +118,7 @@ public class UserControllerTest extends IntegrationTest {
     }
 
     @Test
+    @Order(3)
     public void registerExistedUser() throws Exception{
         String login = "TestLogin";
         String deviceUID = "TestUID";
@@ -113,24 +142,14 @@ public class UserControllerTest extends IntegrationTest {
     }
 
     @Test
+    @Order(4)
     public void inviteUser() throws Exception {
-        BaseUserDto baseUserDto = new BaseUserDto();
-        baseUserDto.setDeviceUID("TestUID1");
-        baseUserDto.setLogin("TestLogin1");
-        User user = userService.createUser(baseUserDto);
-        token = user.getToken();
-
-        baseUserDto.setDeviceUID("TestUID2");
-        baseUserDto.setLogin("TestLogin2");
-        user = userService.createUser(baseUserDto);
-        code = user.getCode();
-
         BaseRequestDto<String> inviteRequest = new BaseRequestDto<>();
         inviteRequest.setToken(token);
         inviteRequest.setObject(code);
         String json = new Gson().toJson(inviteRequest);
 
-        ResultActions resultActions = mockMvc.perform(
+       mockMvc.perform(
                 post(API_PATH + USER.ENDPOINT + USER.INVITE)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
@@ -139,8 +158,149 @@ public class UserControllerTest extends IntegrationTest {
                         status().isOk()
                 )
                 .andExpect(
-                        jsonPath("$.object").value(InvitationStatus.PENDING.name())
+                        jsonPath("$.object").isNumber()
                 );
     }
 
+    @Test
+    @Order(5)
+    public void acceptInvitation() throws Exception{
+
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        Invitation invitation = new Invitation();
+        invitation.setOriginalUser(originalUser);
+        invitation.setAcceptedUser(acceptedUser);
+        invitation.setInvitationStatus(InvitationStatus.PENDING);
+        invitation = invitationRepository.save(invitation);
+
+        Assertions.assertNotNull(invitation);
+        Assertions.assertNotNull(invitation.getId());
+
+        BaseRequestDto<Long> inviteAcceptRequest = new BaseRequestDto<>();
+        inviteAcceptRequest.setToken(token);
+        inviteAcceptRequest.setObject(invitation.getId());
+        String json = new Gson().toJson(inviteAcceptRequest);
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.ACCEPT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+        )
+                .andExpect(
+                        status().isOk()
+                );
+    }
+
+    @Test
+    public void rejectInvitation() throws Exception {
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        Invitation invitation = new Invitation();
+        invitation.setOriginalUser(originalUser);
+        invitation.setAcceptedUser(acceptedUser);
+        invitation.setInvitationStatus(InvitationStatus.PENDING);
+        invitation = invitationRepository.save(invitation);
+
+        Assertions.assertNotNull(invitation);
+        Assertions.assertNotNull(invitation.getId());
+
+        BaseRequestDto<Long> inviteAcceptRequest = new BaseRequestDto<>();
+        inviteAcceptRequest.setToken(token);
+        inviteAcceptRequest.setObject(invitation.getId());
+        String json = new Gson().toJson(inviteAcceptRequest);
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.REJECT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.object").isBoolean()
+                )
+                .andExpect(
+                        jsonPath("$.object").value(true)
+                );
+    }
+
+    @Test
+    public void inviteInvitedUser() throws Exception {
+        inviteUser();
+
+        BaseRequestDto<String> inviteRequest = new BaseRequestDto<>();
+        inviteRequest.setToken(token);
+        inviteRequest.setObject(code);
+        String json = new Gson().toJson(inviteRequest);
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.INVITE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isConflict()
+                );
+
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        Assertions.assertThrows(DataExistsException.class,
+                () -> invitationService.inviteUser(originalUser, acceptedUser)
+        );
+    }
+
+    @Test
+    public void rejectAcceptedInvitation() throws Exception{
+        User originalUser = userRepository.findByToken(token).orElse(null);
+        User acceptedUser = userRepository.findByCode(code).orElse(null);
+        Assertions.assertNotNull(originalUser);
+        Assertions.assertNotNull(acceptedUser);
+
+        Invitation invitation = new Invitation();
+        invitation.setOriginalUser(originalUser);
+        invitation.setAcceptedUser(acceptedUser);
+        invitation.setInvitationStatus(InvitationStatus.PENDING);
+        invitation = invitationRepository.save(invitation);
+
+        Assertions.assertNotNull(invitation);
+        Assertions.assertNotNull(invitation.getId());
+
+        BaseRequestDto<Long> inviteAcceptRequest = new BaseRequestDto<>();
+        inviteAcceptRequest.setToken(token);
+        inviteAcceptRequest.setObject(invitation.getId());
+        String json = new Gson().toJson(inviteAcceptRequest);
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.ACCEPT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.object").isString()
+                );
+
+        mockMvc.perform(
+                post(API_PATH + USER.ENDPOINT + USER.REJECT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        )
+                .andExpect(
+                        status().isConflict()
+                );
+
+    }
 }

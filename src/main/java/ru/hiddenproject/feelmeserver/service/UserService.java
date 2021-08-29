@@ -4,31 +4,37 @@ import ru.hiddenproject.feelmeserver.dto.BaseUserDto;
 import ru.hiddenproject.feelmeserver.exception.DataExistsException;
 import ru.hiddenproject.feelmeserver.exception.DataValidityException;
 import ru.hiddenproject.feelmeserver.exception.InternalException;
-import ru.hiddenproject.feelmeserver.model.AcceptedUser;
 import ru.hiddenproject.feelmeserver.model.User;
 
+/**
+ * Interface for operations with {@link ru.hiddenproject.feelmeserver.model.User}
+ */
 public interface UserService {
 
     /**
      * Saves user data to database
      * @param user User data
      * @return Saved user data
+     * @throws DataValidityException if user data is not valid
      */
     User save(User user) throws DataValidityException;
 
     /**
+     * Searches user by id
      * @param id User id to find
      * @return User data or null
      */
     User findById(Long id);
 
     /**
+     * Searches user by token
      * @param token User token to find
      * @return User data or null
      */
     User findByToken(String token);
 
     /**
+     * Searches user by invite code
      * @param code User code to find
      * @return User data or null
      */
@@ -45,10 +51,11 @@ public interface UserService {
      * Creates db user from dto
      * @param baseUserDto New user's data
      * @return User to save in db
+     * @throws DataExistsException if user already exists
+     * @throws DataValidityException if user data is not valid
+     * @throws InternalException if internal exception occurred
      */
     User createUser(BaseUserDto baseUserDto) throws DataValidityException,
             InternalException, DataExistsException;
-
-    AcceptedUser inviteUser(User originalUser, User acceptedUser) throws DataExistsException;
 
 }
