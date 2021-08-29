@@ -1,6 +1,6 @@
 ## FeelMe Server
 [![Build Status](https://app.travis-ci.com/CrissNamon/feelme-server.svg?branch=main)](https://app.travis-ci.com/CrissNamon/feelme-server)
-[![codecov](https://codecov.io/gh/CrissNamon/feelme-server/branch/master/graph/badge.svg?token=Q6MM2CY23E)](https://codecov.io/gh/CrissNamon/feelme-server)
+[![codecov](https://codecov.io/gh/CrissNamon/feelme-server/branch/main/graph/badge.svg?token=Q6MM2CY23E)](https://codecov.io/gh/CrissNamon/feelme-server)
 <br>
 FeelMe Wear is an android app, which lets two people to connect their WearOS watches and send vibrations to them.
 <br>
